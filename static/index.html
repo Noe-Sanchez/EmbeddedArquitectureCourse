@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/charts.min.css">
+</head>
+<body>
+    <h1>Embedded Dashboard</h1>
+
+    <div class="card">
+        <h2>Control</h2>
+        <!-- Relay state -->
+        <button id="relayButton">Toggle Relay</button>
+        <p>Relay state: <span id="relayState">Unknown</span></p>
+        <!-- Servo mode -->
+        <button id="servoButton">Toggle Servo Mode</button>
+        <p>Servo mode: <span id="servoMode">Unknown</span></p>
+        <!-- Hidden slider that appears when servoMode is auto and has ticks of the numbers-->
+        <input id="servoSlider" type="range" min="0" max="180" value="90" step="1" style="display: none">
+    </div>
+
+    <div class="card">
+        <h2>Temperatura</h2>
+        <canvas id="temperatureChart"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        // Make PUT requests with JSON payload with buttons and print response to console
+        document.getElementById('relayButton').addEventListener('click', async () => {
+            // If relay state is "MANUAL", set it to "AUTO", otherwise set it to "MANUAL"
+            if (document.getElementById("relayState").textContent === 'OFF') {
+                const response = await fetch('/api/relay', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ state: 'ON' })
+                });
+                console.log(await response.json());
+            } else {
+                const response = await fetch('/api/relay', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ state: 'OFF' })
+                });
+                console.log(await response.json());
+            }
+            
+        });
+
+        document.getElementById('servoButton').addEventListener('click', async () => {
+            // If servo mode is "MANUAL", set it to "AUTO", otherwise set it to "MANUAL"
+            if (document.getElementById("servoMode").textContent === 'manual') {
+                const response = await fetch('/api/servo', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ state: 'auto' })
+                });
+                console.log(await response.json());
+            } else {
+                slidi = document.getElementById('servoSlider');
+                const response = await fetch('/api/servo', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ state: 'manual' , angle: slidi.value})
+                });
+                console.log(await response.json());
+            }
+        });
+
+        // Fetch periodically the current relay state and update the label text
+        setInterval(async () => {
+            const response = await fetch('/api/relay');
+            const data = await response.json();
+            document.getElementById('relayState').textContent = data.state;
+        }, 1000);
+
+        setInterval(async () => {
+            const response = await fetch('/api/servo');
+            const data = await response.json();
+            document.getElementById('servoMode').textContent = data.state;
+            if (data.state === 'auto') {
+                document.getElementById('servoSlider').style.display = 'block';
+            } else {
+                document.getElementById('servoSlider').style.display = 'none';
+            }
+        }, 1000);
+
+        // Update uptime and CPU usage (replace with your data fetching logic)
+        //document.getElementById('uptime').textContent = '1 hour 23 minutes';
+        //document.getElementById('cpu_usage').textContent = '52';
+
+        // Sample temperature data (replace with your data source)
+        const temperatureData = {
+            labels: ['Now', '1h ago', '2h ago', '3h ago'],
+            datasets: [{
+                label: 'Temperature (°C)',
+                data: [25, 24.5, 23.8, 24.2],
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        // Create temperature chart
+        const ctx = document.getElementById('temperatureChart').getContext('2d');
+        const temperatureChart = new Chart(ctx, {
+            type: 'line',
+            data: temperatureData,
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+    </script>
+</body>
+</html>
