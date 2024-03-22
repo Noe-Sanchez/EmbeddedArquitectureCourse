@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory
 import time
-#import grovepi
-#import threading
+import grovepi
+import threading
 
 app = Flask(__name__)
 
@@ -21,15 +21,15 @@ def landing_page():
     return send_from_directory('static', "index.html")
 
 
-#def temp_func():
-#    print('Starting a task...')
-#    while(1):
-#        global temps
-#        global start_time
-#        current_time = time.perf_counter()
-#        temps.append({"temp": grovepi.temp(0,'1.2'), "stamp": current_time-start_time})
-#        print('Task', temps[-1])
-#        time.sleep(5)
+def temp_func():
+    print('Starting a task...')
+    while(1):
+        global temps
+        global start_time
+        current_time = time.perf_counter()
+        temps.append({"temp": grovepi.temp(0,'1.2'), "stamp": current_time-start_time})
+        print('Task', temps[-1])
+        time.sleep(5)
 
 @app.route('/api/servo', methods=['PUT'])
 def put_servo():
@@ -66,10 +66,10 @@ def put_relay():
     for key in data.keys():
         print("Parsed servo state", data[key])
         relay_state = data[key]
-    #if relay_state == "ON":
-    #    grovepi.digitalWrite(4,1)
-    #else:
-    #    grovepi.digitalWrite(4,0)
+    if relay_state == "ON":
+        grovepi.digitalWrite(4,1)
+    else:
+        grovepi.digitalWrite(4,0)
     response = app.make_response("OK")
     response.status_code = 200
     return response
@@ -106,8 +106,8 @@ def get_relay():
     response.status_code = 200
     return response
 
-#temp_thread = threading.Thread(target=temp_func)
-#temp_thread.start()
+temp_thread = threading.Thread(target=temp_func)
+temp_thread.start()
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=4715)
