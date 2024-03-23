@@ -31,7 +31,7 @@ def temp_func():
         global temps
         global start_time
         current_time = time.perf_counter()
-        temps.append({"temp": grovepi.temp(0,'1.2'), "stamp": current_time-start_time})
+        temps.append({"temp": round(grovepi.temp(0,'1.2'),1), "stamp": round(current_time-start_time,1)})
         print('Task', temps[-1])
         time.sleep(5)
 

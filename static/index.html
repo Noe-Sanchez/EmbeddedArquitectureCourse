@@ -118,8 +118,8 @@
                 body: JSON.stringify({ num_values: 5 })
             });
             const data = await response.json();
-	    temperatureData.labels = data.map(d => d.stamp);
-            temperatureData.datasets[0].data = data.map(d => d.temp);
+	    temperatureData.labels = data.map(d => d.stamp); 
+            temperatureData.datasets[0].data = data.map(d => d.temp); 
             temperatureChart.update();
         }, 5000);
 
