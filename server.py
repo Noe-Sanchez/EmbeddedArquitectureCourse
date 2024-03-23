@@ -2,8 +2,12 @@ from flask import Flask, request, jsonify, send_from_directory
 import time
 import grovepi
 import threading
+import serial
 
 app = Flask(__name__)
+
+ser = serial.Serial("/dev/ttyACM0", 9600)
+ser.close()
 
 global servo_state
 servo_state = "auto"
@@ -48,6 +52,14 @@ def put_servo():
         elif key == "state":
             servo_state = data[key]
             print("Parsed state", data[key])
+    
+    if (servo_state == "manual"):
+        try:
+            ser.open()
+            ser.write((str(servo_angle)+ "\n").encode())
+            ser.close()
+        except:
+            print("Serial error")
     #desired_pwm = 12.75*(servo_angle/180)+12.75
     #grovepi.analogWrite(3,desired_pwm)
     #print(desired_pwm)

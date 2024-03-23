@@ -95,21 +95,35 @@
             }
         }, 1000);
 
-        // Update uptime and CPU usage (replace with your data fetching logic)
-        //document.getElementById('uptime').textContent = '1 hour 23 minutes';
-        //document.getElementById('cpu_usage').textContent = '52';
 
         // Sample temperature data (replace with your data source)
         const temperatureData = {
-            labels: ['Now', '1h ago', '2h ago', '3h ago'],
+            labels: ['0', '0', '0', '0'],
             datasets: [{
                 label: 'Temperature (°C)',
-                data: [25, 24.5, 23.8, 24.2],
+                data: [0, 0, 0, 0, 0],
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
                 borderColor: 'rgba(255, 99, 132, 1)',
                 borderWidth: 1
             }]
         };
+
+	//update chart data every 5 seconds, do with post request
+        setInterval(async () => {
+            const response = await fetch('/api/temp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ num_values: 5 })
+            });
+            const data = await response.json();
+	    temperatureData.labels = data.map(d => d.stamp);
+            temperatureData.datasets[0].data = data.map(d => d.temp);
+            temperatureChart.update();
+        }, 5000);
+
+
 
         // Create temperature chart
         const ctx = document.getElementById('temperatureChart').getContext('2d');
